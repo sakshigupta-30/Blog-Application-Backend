@@ -16,14 +16,29 @@ console.log('🔍 Attempting to connect to MongoDB');
 console.log('URI:', MONGODB_URI.substring(0, 30) + '...' + MONGODB_URI.substring(MONGODB_URI.length - 20));
 
 
-// Middleware
+ // Middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(
   cors({
-    origin: config.NODE_ENV === 'development' 
-      ? ['http://localhost:3000', 'http://localhost:5173'] 
-      : config.FRONTEND_ORIGINS,
+    origin: (origin: any, callback: any) => {
+      const additional = Array.isArray(config.FRONTEND_ORIGINS)
+        ? config.FRONTEND_ORIGINS
+        : config.FRONTEND_ORIGINS
+        ? [config.FRONTEND_ORIGINS]
+        : [];
+      const whitelist = [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        ...additional,
+      ].filter(Boolean);
+      // allow requests with no origin (like mobile apps or curl) and allowed origins
+      if (!origin || whitelist.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
    credentials: true,
   })
 );
