@@ -2,11 +2,9 @@ services:
   - type: web
     name: blog-server
     runtime: node
-    rootDir: server
+    rootDir: .
     buildCommand: npm install && npm run build
-    startCommand: npx ts-node src/index.ts
+    startCommand: npm start
     envVars:
-      - key: PORT
-        value: 5000
       - key: NODE_ENV
         value: production
